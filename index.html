@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="VADAR">
+    <meta name="keywords" content="VADAR, Omni3D-Bench, Program Synthesis">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>No Labels, No Problem: Training Visual Reasoners with Multimodal Verifiers</title>
+
+
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <link rel="icon" href="./static/images/vader_heart.png">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+    <script defer src="./static/js/fontawesome.all.min.js"></script>
+    <script src="./static/js/bulma-carousel.min.js"></script>
+    <script src="./static/js/bulma-slider.min.js"></script>
+    <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container is-max-desktop">
+                <div class="columns is-centered">
+                    <div class="column has-text-centered">
+                        <div class="valor-title">
+                            <img src="./static/images/valor_logo.png" alt="VALOR logo" class="valor-logo">
+                            <h1 class="title is-1 publication-title">VALOR</h1>
+                        </div>
+                        <h1 class="title is-1 publication-title">No Labels, No Problem: Training Visual Reasoners with
+                            Multimodal Verifiers</h1>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block">
+                                <a href="https://damianomarsili.github.io/" target="_blank"
+                                    rel="noopener noreferrer">Damiano Marsili</a>,</span>
+                            <span class="author-block">
+                                <a href="https://georgiagkioxari.com/" target="_blank" rel="noopener noreferrer">Georgia
+                                    Gkioxari</a></span>
+                        </div>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block">Caltech</span>
+                        </div>
+                        <!-- DAMI up to here. -->
+                        <div class="column has-text-centered">
+                            <div class="publication-links">
+                                <!-- PDF Link. -->
+                                <span class="link-block">
+                                    <a href="" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </span>
+                                        <span>Paper</span>
+                                    </a>
+                                </span>
+                                <span class="link-block">
+                                    <a href="" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="ai ai-arxiv"></i>
+                                        </span>
+                                        <span>arXiv</span>
+                                    </a>
+                                </span>
+                                <!-- Code Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/damianomarsili/VALOR"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-github"></i>
+                                        </span>
+                                        <span>Code</span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container is-max-desktop">
+            <!-- Abstract. -->
+            <div class="columns is-centered has-text-centered">
+                <div class="content has-text-centered">
+                    <p>
+                        <b>tl;dr</b>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!--/ Abstract. -->
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container is-max-desktop">
+            <!-- Abstract. -->
+            <div class="columns is-centered has-text-centered">
+                <div class="column is-four-fifths">
+                    <div class="content has-text-justified">
+                        <p>
+                            TODO: Section 1 & Section 2.
+                        </p>
+
+                        <p>
+                            TODO: Section 3
+                        </p>
+
+                        <p>
+                            Among open-source models we evaluated (Llama3.2-11B, Gemma3-12B,
+                            and Qwen3-8B), Qwen3 consistently performed the best. We found that despite using the
+                            instruction-tuned variants, Gemma3 and Llama3.2 routinely ignored our system prompts. For
+                            example, both models would frequently overwrite the input image path, define "placeholder"
+                            values, or argue the query was impossible and refuse to answer altogether. In contrast,
+                            Qwen3 consistently produced reasonable programs, but incorrectly handled nuanced details in
+                            the query and failed to use tools effectively. We decided to build on the capable Qwen3
+                            model, and improve its shortcomings via verifier-guided post-training.
+                        </p>
+
+                        <p>
+                            <strong>Training with verifiers improves model reasoning.</strong>
+
+                        </p>
+
+                        <p>
+                            TODO: Section 5
+                        </p>
+
+                        <p>
+                            TODO: Section 6 - conclusion
+                        </p>
+                        <strong>Recommended Reading</strong>
+                        <ol>
+                            <li><a href="https://visually-grounded-rl.github.io/">Visually Grounded Reinforcement
+                                    Learning</a></li>
+                            <li><a href="https://grounded-reasoning.github.io/">Teaching MLLMs to Think with Images</a>
+                            </li>
+                            <li><a href="https://openai.com/index/thinking-with-images/">Thinking with Images</a></li>
+                            <li><a href="https://glab-caltech.github.io/vadar/">Visual Agentic AI for Spatial Reasoning
+                                    with a Dynamic API</a></li>
+                        </ol>
+                        <strong>Acknowledgements</strong>
+                        <p>
+                            We would like to thank ...
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!--/ Abstract. -->
+        </div>
+    </section>
+
+
+    <section class="section" id="BibTeX">
+        <div class="container is-max-desktop content">
+            <h2 class="title">BibTeX</h2>
+            <pre>
+<code>TODO.</code></pre>
+        </div>
+    </section>
+
+    <div id="modal" class="modal">
+        <div class="modal-background"></div>
+
+        <div class="modal-content">
+            <div id='plot-loading-div' class="box">
+                Loading...
+            </div>
+            <div id='plot-div'></div>
+        </div>
+
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+
+</body>
+
+</html>
