@@ -210,12 +210,14 @@
                             </video>
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                TODO: fig caption
+                                VALOR uses LLM verifiers to improve reasoning via reinforcement learning.
+                                Our reward consists of six binary components that target specific aspects
+                                of spatial reasoning.
                             </figcaption>
                         </figure>
 
                         <p>
-                            TODO: introduce VALOR framework.
+                            TODO: paragraph on LLM verifiers.
                         </p>
 
                         <h4>Improving Visual Grounding with VLM Verifiers</h4>
@@ -228,10 +230,16 @@
                         </figure>
 
                         <p>
-                            TODO: introduce VALOR framework.
+                            TODO: paragraph on VLM verifiers.
                         </p>
 
-                        <h4>Can trained models ever outperform the verifiers?</h4>
+                        <h4>Inference</h4>
+
+                        <p>
+                            TODO: inference video + explanation.
+                        </p>
+
+                        <h4>Aside: Can trained models ever outperform the verifiers?</h4>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
                             <img src="./static/images/valor_vs_gpt5.png"
                                 alt="Despite being a good verifier for visual grounding, GPT5 struggles with visual grounding.">
@@ -257,9 +265,16 @@
                             when its own grounding predictions are imperfect.
                         </p>
 
+                        <h4>Evaluation</h4>
+
                         <p>
-                            TODO: introduce experimental setup/all use tools etc.
+                            We evaluated a series of open-source models, as well as VALOR, across a wide range of
+                            spatial reasoning benchmarks. Each LLM was used language-only, and was prompted to
+                            generate Python programs that can invoke an API of vision specialist models (detection,
+                            depth estimation, VQA), as described above. We then executed the generated programs to
+                            determine accuracy on each of the bechmarks.
                         </p>
+
 
                         <h4>How do open-source models perform?</h4>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
@@ -273,9 +288,6 @@
                         </figure>
 
                         <p>
-                            We evaluated a series of open-source models across a wide range of spatial reasoning
-                            benchmarks. Each model was used language-only, and was prompted to generate Python programs
-                            that could invoke an API of vision specialist models (detection, depth estimation, VQA).
                             Among the open-source models we evaluated (Llama3.2-11B, Gemma3-12B,and Qwen3-8B), Qwen3
                             consistently performed the best. We found that despite using the
                             instruction-tuned variants, Gemma3 and Llama3.2 routinely ignored our system prompts. For
