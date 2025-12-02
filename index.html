@@ -130,46 +130,71 @@
                             questions in the sciences. This rate of progress is apparent when comparing benchmark
                             results from different model releases. For example, GPT4o achieved just 15.0% on the math
                             problems in AIME 2025, but OpenAI's later model release of GPT-5-mini achieves a staggering
-                            94.0%. Similar results are seen on software engineering benchmark LiveCodeBench (23.0% to
-                            85.0%) and science VQA benchmark GPQA (40.2% to 82.3%).
+                            94.0%. Similar results are seen on software engineering benchmark LiveCodeBench and science
+                            VQA benchmark GPQA.
                         </p>
                         <p>
                             Unfortunately, progress in visual reasoning has been significantly slower. Comparing the
-                            same two models, the improvements across benchmarks are much more modest: 73.7% to 81.0% on
-                            BLINK, 80.9% to 84.4% on VSR, and 84.7% to 84.3% on CountBenchQA — a slight decrease. On
-                            the harder 3D spatial reasoning benchmark Omni3D-Bench, accuracy is still quite
-                            low — GPT-5-mini reaches 40.9%, only 5.9% above GPT-4o. This discrepancy is not
-                            surprising, visual reasoning is a challenging task. It requires precise object
-                            grounding and understanding complex spatial relationships, both of which remain challenging
-                            for current models.
-                        </p>
-                        <h4>Improving Visual Reasoning</h4>
-
-                        <p>
-                            TODO: introduce two camps of works
+                            same two models, the improvements across benchmarks are much more modest: +7.3% on BLINK,
+                            +3.5% on VSR, and a slight decrease on CountBenchQA. On the harder 3D spatial reasoning
+                            benchmark Omni3D-Bench, accuracy is still quite low: GPT-5-mini reaches 40.9%, only 5.9%
+                            above GPT-4o. This discrepancy is not surprising, visual reasoning is a challenging task. It
+                            requires precise object grounding and understanding complex spatial relationships, both of
+                            which remain challenging for current models.
                         </p>
 
-                        <h4>The VALOR Framework</h4>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
-                            <img src="./static/images/valor.png" alt="VALOR framework.">
+                            <img src="./static/images/gpt_5_o3db.png" alt="GPT-5 failing on Omni3D-Bench.">
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                Figure 2: VALOR is a training framework for visual reasoning, tackling spatial reasoning
+                                Figure 2: GPT-5-Thinking on Omni3D-Bench. GPT-5-Thinking ignores real-world 3D object
+                                sizes and considers only pixel-wise dimensions, leading to an incorrect answer. We
+                                highlight erroneous reasoning in red.
+                            </figcaption>
+                        </figure>
+
+
+                        <p>
+                            Methods to improve visual reasoning broadly fall into two categories. The first
+                            integrates grounding with language reasoning, where vision-language models
+                            (VLMs) generate chain-of-thought explanations in text. Examples include Thinking with Images
+                            [CITE], GRIT [CITE], and Visually Grounded RL [CITE]. These methods can handle simple
+                            spatial relations, but suffer from weak visual understanding and logical errors. For
+                            instance, in the above example, GPT-5-Thinking ignores real-world 3D object sizes and
+                            considers only pixel-wise dimensions, incorrectly concluding the coffee table is six times
+                            shorter than the sofa. These methods are also data-hungry, requiring extensive supervision.
+                        </p>
+
+                        <p>
+                            Another line of work uses LLMs for program synthesis with vision specialists. Examples
+                            include VADAR [CITE], ViperGPT [CITE], and VisProg [CITE]. These training-free approaches
+                            rely on proprietary LLMs and pre-trained specialists that are poorly aligned for visual and
+                            spatial reasoning.
+                        </p>
+
+                        <h3>The VALOR Framework</h3>
+
+                        <p>
+                            We introduce VALOR, a scalable; annotation-free training framework that tackles spatial
+                            reasoning from images by combining LLM-powered reasoning with specialized tool use. VALOR
+                            employs an LLM to generate plans and executable programs and invokes vision specialists for
+                            execution. Both the reasoning and the vision grounding model are tuned for the task via a
+                            label-free training paradigm. This is achieved by leveraging multimodal verifiers that
+                            critique model outputs. Their feedback serves as a learning signal to improve both
+                            components, the LLM responsible for logic and the vision specialists responsible for
+                            grounding. We name our approach VALOR as it integrates Verifiers for Annotation-free LOgic
+                            and Reasoning.
+                        </p>
+                        <figure class="image is-fullwidth" style="margin: 1rem 0;">
+                            <img src="./static/images/valor.png" alt="VALOR framework overview">
+                            <!-- optional caption -->
+                            <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
+                                Figure 3: VALOR is a training framework for visual reasoning, tackling spatial reasoning
                                 in both 2D and 3D. During training, LLM verifiers are used to improve reasoning via RL
                                 while VLM verifiers serve as critics to tune vision grounding models
                                 via SFT.
                             </figcaption>
                         </figure>
-
-                        <p>
-                            We tackle spatial reasoning from images by combining LLM-powered reasoning with specialized
-                            tool use. VALOR employs an LLM to generate plans and executable programs and invokes vision
-                            specialists for execution. Both the reasoning and the vision grounding model are tuned for
-                            the task via a label-free training paradigm. This is achieved by leveraging multimodal
-                            verifiers that critique model outputs. Their feedback serves as a learning signal to improve
-                            both components, the LLM responsible for logic and the vision specialists responsible for
-                            grounding. Figure 2 shows an overview of our approach.
-                        </p>
 
                         <p>
                             <strong>Plan and Code Generation.</strong> Given a query, the LLM generates a natural
@@ -181,27 +206,26 @@
                             <li>
                                 <code>GD_DETECT</code>, returns the bounding box of all object instances specified by
                                 the noun description —
-                                e.g., <code>GD_DETECT("CAR")</code>
+                                e.g., <code>GD_DETECT("CAR")</code> using a GroundingDINO model [CITE].
                             </li>
                             <li>
                                 <code>DEPTH</code>, returns the depth of a pixel in the image —
-                                <code>DEPTH(IMAGE, X, Y)</code>
+                                <code>DEPTH(IMAGE, X, Y)</code> using MoGe2 [CITE].
                             </li>
                             <li>
                                 <code>VQA</code>, returns an object’s attribute (e.g., color) from the input image crop
                                 around the object —
                                 e.g., <code>VQA(IMAGE_CROP, "WHAT IS THE COLOR OF THE OBJECT IN THE IMAGE?")</code>
+                                using GPT-5-mini [CITE].
                             </li>
                         </ul>
 
-                        <p>
-                            <strong>Vision Specialists.</strong> VALOR employs three vision specialist models:
-                            GroundingDINO for object localization (<code>GD DETECT</code>), MoGe2 for pointwise metric
-                            depth estimation (<code>DEPTH</code>), and GPT-5-mini for VQA
-                            with an image cropped around an object bounding box (<code>VQA</code>).
-                        </p>
-
                         <h4>Improving Reasoning with LLM Verifiers</h4>
+                        <p>
+                            VALOR leverages LLM verifiers as a reward signal to improve reasoning via reinforcement
+                            learning. LLM verifiers critique model outputs across a rubric of six criteria targeting
+                            specfic aspects of spatial reasoning.
+                        </p>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
                             <video id="teaser" autoplay muted loop playsinline height="80%">
                                 <source
@@ -210,17 +234,73 @@
                             </video>
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                VALOR uses LLM verifiers to improve reasoning via reinforcement learning.
+                                Video 1: VALOR uses LLM verifiers to improve reasoning via reinforcement learning.
                                 Our reward consists of six binary components that target specific aspects
                                 of spatial reasoning.
                             </figcaption>
                         </figure>
 
                         <p>
-                            TODO: paragraph on LLM verifiers.
+                            Our reward is composed of six binary rewards:
                         </p>
 
+                        <ul>
+                            <li>
+                                <strong>Format Reward:</strong> Ensures model outputs are properly
+                                formatted. Format reward is 1 if the model output contains the proper
+                                <code></code> and <code></code> tags and 0 otherwise.
+                            </li>
+                            <li>
+                                <strong>Syntax Reward:</strong> Evaluates if the predicted program executes without
+                                Python errors. Syntax reward is 1 if the program executes properly with placeholder
+                                variables, 0 otherwise.
+                            </li>
+                            <li>
+                                <strong>Spatial Reward:</strong> An LLM verifies that the predicted plan addresses all
+                                spatial relationships in the query (above, behind, left of, etc.). The verifier returns
+                                1 if all spatial relationships are addressed, 0 otherwise.
+                            </li>
+                            <li>
+                                <strong>Attribute Reward:</strong> An LLM verifier assesses whether the plan specifies
+                                explicitly and correctly how to compute all relevant attributes (height, color, etc.) in
+                                the query. The LLM returns 1 if all attributes are computed correctly, otherwise 0.
+                            </li>
+                            <li>
+                                <strong>Logic Reward:</strong> An LLM verifier is given the query and predicted plan, it
+                                returns 1 if it considers the plan reasonable and coherent for the given query, 0
+                                otherwise.
+                            </li>
+                            <li>
+                                <strong>Adherence Reward:</strong> The predicted plan and code are given to an LLM
+                                verifier, which returns 1 if the code faithfully implements the plan without deviations,
+                                0 otherwise.
+                            </li>
+                        </ul>
+
+                        <p>
+                            Our final reward is:
+                        </p>
+
+                        <p>TODO: add equation</p>
+
+                        <p>The format reward rfmt acts as a hard constraint and is applied as a multiplier, while the
+                            weighted sum of the remaining rewards evaluates content quality. All rk ∈ {0, 1} and P
+                            k λk = 1.0. (TODO: fix math)
+                        </p>
+
+
                         <h4>Improving Visual Grounding with VLM Verifiers</h4>
+
+                        <p>
+                            In addition to logic, visual reasoning relies on accurate grounding. Modern detectors like
+                            GroundingDINO, trained on web data, are error-prone and struggle to generalize beyond their
+                            training domains. Fine-tuning with domain-specific labels can mitigate these issues, but
+                            collecting such annotations is labor intensive. We propose an alternative: improving visual
+                            grounding through VLM verifiers. Vision specialists cast predictions, VLM verifiers evaluate
+                            them, and the feedback augments their training set. This approach requires no manual
+                            annotations and scales across domains without additional labels.
+                        </p>
+
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
                             <video id="teaser" autoplay muted loop playsinline height="80%">
                                 <source
@@ -229,47 +309,95 @@
                             </video>
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                TODO: replace with video.
+                                Video 2: TODO: replace with video.
                             </figcaption>
                         </figure>
 
                         <p>
-                            TODO: paragraph on VLM verifiers.
+                            Our approach for verifier-improved visual grounding relies on image-query pairs (TODO:
+                            math). For each query, our LLM reasoning model generates a plan and code, (TODO: math). From
+                            code (TODO: math), we parse all grounding queries – e.g., <code>GD_DETECT(“HELMET”)</code> –
+                            and execute them with a pre-trained detector. To ensure high recall, we lower the detector’s
+                            confidence threshold. This leads to overprediction, which we validate with a frozen VLM
+                            verifier in three steps:
+                        </p>
+
+                        <ol>
+                            <li>
+                                <strong>Coarse Filtering:</strong> The input image with all candidate detections is
+                                passed to the verifier, which is prompted to discard all boxes where the object does not
+                                match the box label.
+                            </li>
+                            <li>
+                                <strong>Per-crop Object Check:</strong> The verifier is given a cropped image of each
+                                remaining box and asked to verify if the object visible in the crop matches the
+                                predicted label. All incorrect boxes are discarded.
+                            </li>
+                            <li>
+                                <strong>Deduplication:</strong> The input image with all remaining detections is shown
+                                to the verifier, which is tasked with discarding all duplicate predictions. For each
+                                set of duplicates, the VLM is asked to retain the most correct box.
+                            </li>
+                        </ol>
+
+                        <p>
+                            Confirmed detections form a new training set, which we use to fine-tune a pre-trained
+                            GroundingDINO detector.
                         </p>
 
                         <h4>Inference</h4>
 
                         <p>
-                            TODO: inference video + explanation.
+                            The predicted Python programs, that invoke our vision-specialist APIs, are executed to
+                            produce answers to visual reasoning queries.
                         </p>
 
-                        <h4>Aside: Can trained models ever outperform the verifiers?</h4>
+                        <figure class="image is-fullwidth" style="margin: 1rem 0;">
+                            <video id="teaser" autoplay muted loop playsinline height="80%">
+                                <source
+                                    src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/inference.mp4"
+                                    type="video/mp4">
+                            </video>
+                            <!-- optional caption -->
+                            <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
+                                Video 4: TODO: replace with video.
+                            </figcaption>
+                        </figure>
+
+
+                        <h4>Aside: can trained models ever outperform the verifiers?</h4>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
                             <img src="./static/images/valor_vs_gpt5.png"
                                 alt="Despite being a good verifier for visual grounding, GPT5 struggles with visual grounding.">
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                Figure: Despite being a powerful VLM verifier for visual grounding, GPT-5-mini struggles
+                                Figure 4: Despite being a powerful VLM verifier for visual grounding, GPT-5-mini
+                                struggles
                                 with generating boxes for object grounding.
                             </figcaption>
                         </figure>
 
                         <p>
-                            A natural question to ask is whether VALOR can ever outperform the veriifers it uses during
-                            training. To this end, we first note that VALOR uses multimodal verifiers to <em>select</em>
+                            A natural question to ask is whether VALOR can ever outperform the veriifers it uses
+                            during
+                            training. To this end, we first note that VALOR uses multimodal verifiers to
+                            <em>select</em>
                             and <em>critique</em> data, not <em>generate</em> it. Thus, VALOR is not bound by the
-                            <em>generation</em> abilities of an LLM/VLM, but rather it's <em>verification</em> ability.
+                            <em>generation</em> abilities of an LLM/VLM, but rather it's <em>verification</em>
+                            ability.
                             This distinction is important as we find there are tasks where VLMs are better verifiers
-                            than generators. For a concrete example, in VALOR, we use GPT-5-mini as our VLM verifier for
+                            than generators. For a concrete example, in VALOR, we use GPT-5-mini as our VLM verifier
+                            for
                             improving the visual grounding module. Although highly effective at evaluating object
                             detections, we observe that it often struggles generating bounding boxes itself. In the
-                            figure above, we find that GPT-5-mini frequently outputs misaligned or overly large boxes,
+                            figure above, we find that GPT-5-mini frequently outputs misaligned or overly large
+                            boxes,
                             failing to localize objects that VALOR (trained with GPT-5-mini as a verifier) correctly
                             detects. We find that a VLM canprovide reliable binary judgements about correctness even
                             when its own grounding predictions are imperfect.
                         </p>
 
-                        <h4>Evaluation</h4>
+                        <h3>Evaluation</h3>
 
                         <p>
                             We evaluated a series of open-source models, as well as VALOR, across a wide range of
@@ -282,10 +410,11 @@
 
                         <h4>How do open-source models perform?</h4>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
-                            <img src="./static/images/os_bar_plot.png" alt="">
+                            <img src="./static/images/os_bar_plot.png"
+                                alt="open-source model performance on spatial reasoning benchmarks">
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                Figure: Open-source language-only models generate Python programs with
+                                Figure 5: Open-source language-only models generate Python programs with
                                 access to an API of vision specialist models. We execute the programs and report
                                 accuracy.
                             </figcaption>
@@ -294,10 +423,13 @@
                         <p>
                             Among the open-source models we evaluated (Llama3.2-11B, Gemma3-12B,and Qwen3-8B), Qwen3
                             consistently performed the best. We found that despite using the
-                            instruction-tuned variants, Gemma3 and Llama3.2 routinely ignored our system prompts. For
-                            example, both models would frequently overwrite the input image path, define "placeholder"
+                            instruction-tuned variants, Gemma3 and Llama3.2 routinely ignored our system prompts.
+                            For
+                            example, both models would frequently overwrite the input image path, define
+                            "placeholder"
                             values, or argue the query was impossible and refuse to answer altogether. In contrast,
-                            Qwen3 consistently produced reasonable programs, but incorrectly handled nuanced details in
+                            Qwen3 consistently produced reasonable programs, but incorrectly handled nuanced details
+                            in
                             the query and failed to use tools effectively. We felt these were issues that could be
                             addressed via post-training, so decided to build on the capable Qwen3 model for VALOR.
                         </p>
@@ -308,14 +440,16 @@
                                 alt="Training with verifiers improves model reasoning">
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                Figure: Verifier-guided training improves model reasoning and tool use, particularly on
-                                reasoning-heavy benchmark Omni3D-Bench.
+                                Figure 6: Verifier-guided training improves model reasoning and tool use, particularly
+                                on reasoning-heavy benchmark Omni3D-Bench.
                             </figcaption>
                         </figure>
                         <p>
                             We compare VALOR-RL with Qwen3 to isolate the impact of verifier-improved reasoning.
-                            VALOR-RL uses a verifier-trained Qwen3 model with the same vision specialist models. Thus
-                            any improvements from Qwen3 to VALOR-RL stem from our LLM-verifier guided training. VALOR-RL
+                            VALOR-RL uses a verifier-trained Qwen3 model with the same vision specialist models.
+                            Thus
+                            any improvements from Qwen3 to VALOR-RL stem from our LLM-verifier guided training.
+                            VALOR-RL
                             shows gains over Qwen3: +3.4% on BLINK, +2.1% on VSR, and +1.3% on RoboSpatial. Most
                             notably, VALOR-RL greatly improves on Omni3D-Bench (+6.4%), our most reasoning-intensive
                             benchmark. On counting tasks TallyQA and CountBenchQA, reasoning is less critical, and
@@ -327,17 +461,22 @@
                                 alt="Training with verifiers improves visual grounding">
                             <!-- optional caption -->
                             <figcaption class="has-text-centered is-size-7" style="margin-top: 0.5rem;">
-                                Figure: Verifier-guided training improves visual grounding, yielding improved
+                                Figure 7: Verifier-guided training improves visual grounding, yielding improved
                                 performance across benchmarks.
                             </figcaption>
                         </figure>
                         <p>
-                            In the above plot we compare VALOR, our final method, to VALOR-RL. The two variants execute
-                            identical programs, though VALOR uses the verifier-improved visual grounding module. VALOR
-                            yields strong gains across the board, particularly on grounding-focused benchmarks: +8.3%
-                            on CountBenchQA, +7.7% on RoboSpatial, and +5.3% on VSR. Improvements on Omni3D-Bench are
+                            In the above plot we compare VALOR, our final method, to VALOR-RL. The two variants
+                            execute
+                            identical programs, though VALOR uses the verifier-improved visual grounding module.
+                            VALOR
+                            yields strong gains across the board, particularly on grounding-focused benchmarks:
+                            +8.3%
+                            on CountBenchQA, +7.7% on RoboSpatial, and +5.3% on VSR. Improvements on Omni3D-Bench
+                            are
                             smaller, as complex queries make reasoning the main challenge for smaller LLMs. Notably,
-                            improving visual grounding for spatial reasoning does not harm general object detection; our
+                            improving visual grounding for spatial reasoning does not harm general object detection;
+                            our
                             training slightly boosts performance on the COCO validation set: 48.4% to
                             48.7% mAP.
                         </p>
@@ -347,29 +486,35 @@
                         </p>
                         <h4>Conclusion</h4>
                         <p>
-                            We introduce VALOR, an annotation-free training paradigm for visual reasoning that leverages
-                            multimodal verifiers to improve LLM reasoning and visual grounding. We find that VLMs/LLMs
-                            are increasingly capable verifiers, not merely generators. In fact, we find there are tasks
-                            where they are excellent verifiers but not great generators (e.g. object detection). This
-                            suggests an alternative method to improving reasoning in the visual domain – leveraging the
-                            multimodal verification capabilities of these models to enable training in domains where
-                            ground truth is unavailable.
+                            We introduce VALOR, an annotation-free training paradigm for visual reasoning that
+                            leverages multimodal verifiers to improve LLM reasoning and visual grounding, leading to
+                            significant improvements on a wide range of spatial reasoning benchmarks. We find that
+                            VLMs/LLMs are increasingly capable verifiers, not merely generators. In fact, we find there
+                            are tasks where they are excellent verifiers but not great generators (e.g. object
+                            detection). This suggests an alternative method to improving reasoning in the visual domain:
+                            leveraging the multimodal verification capabilities of these models to enable training in
+                            domains where ground truth is unavailable.
+                        </p>
+
+                        <strong>Acknowledgements</strong>
+                        <p>
+                            We would like to thank ...
                         </p>
 
                         <strong>Recommended Reading</strong>
                         <ol>
                             <li><a href="https://visually-grounded-rl.github.io/">Visually Grounded Reinforcement
                                     Learning</a></li>
-                            <li><a href="https://grounded-reasoning.github.io/">Teaching MLLMs to Think with Images</a>
+                            <li><a href="https://grounded-reasoning.github.io/">Teaching MLLMs to Think with
+                                    Images</a>
                             </li>
-                            <li><a href="https://openai.com/index/thinking-with-images/">Thinking with Images</a></li>
-                            <li><a href="https://glab-caltech.github.io/vadar/">Visual Agentic AI for Spatial Reasoning
+                            <li><a href="https://openai.com/index/thinking-with-images/">Thinking with Images</a>
+                            </li>
+                            <li><a href="https://glab-caltech.github.io/vadar/">Visual Agentic AI for Spatial
+                                    Reasoning
                                     with a Dynamic API</a></li>
                         </ol>
-                        <strong>Acknowledgements</strong>
-                        <p>
-                            We would like to thank ...
-                        </p>
+
                     </div>
                 </div>
             </div>
