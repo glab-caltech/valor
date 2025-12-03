@@ -26,6 +26,18 @@
     <script src="./static/js/bulma-carousel.min.js"></script>
     <script src="./static/js/bulma-slider.min.js"></script>
     <script src="./static/js/index.js"></script>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
 </head>
 
 <body>
@@ -158,7 +170,8 @@
                             Methods to improve visual reasoning broadly fall into two categories. The first
                             integrates grounding with language reasoning, where vision-language models
                             (VLMs) generate chain-of-thought explanations in text. Examples include Thinking with Images
-                            [CITE], GRIT [CITE], and Visually Grounded RL [CITE]. These methods can handle simple
+                            <a href="#thinking-with-images">[1]</a>, GRIT <a href="#grit">[2]</a>, and Visually Grounded
+                            RL <a href="#vigorl">[3]</a>. These methods can handle simple
                             spatial relations, but suffer from weak visual understanding and logical errors. For
                             instance, in the above example, GPT-5-Thinking ignores real-world 3D object sizes and
                             considers only pixel-wise dimensions, incorrectly concluding the coffee table is six times
@@ -167,7 +180,8 @@
 
                         <p>
                             Another line of work uses LLMs for program synthesis with vision specialists. Examples
-                            include VADAR [CITE], ViperGPT [CITE], and VisProg [CITE]. These training-free approaches
+                            include VADAR <a href="#vadar">[4]</a>, VisProg <a href="#visprog">[5]</a>, and ViperGPT <a
+                                href="#vipergpt">[4]</a>. These training-free approaches
                             rely on proprietary LLMs and pre-trained specialists that are poorly aligned for visual and
                             spatial reasoning.
                         </p>
@@ -246,32 +260,38 @@
 
                         <ul>
                             <li>
-                                <strong>Format Reward:</strong> Ensures model outputs are properly
+                                <strong>Format Reward ($r_{\mathrm{fmt}}$):</strong> Ensures model outputs are properly
                                 formatted. Format reward is 1 if the model output contains the proper
-                                <code></code> and <code></code> tags and 0 otherwise.
+                                <code>&lt;plan&gt;...&lt;\plan&gt;</code> and
+                                <code>&lt;answer&gt;...&lt;\answer&gt;</code> tags, and 0 otherwise.
                             </li>
                             <li>
-                                <strong>Syntax Reward:</strong> Evaluates if the predicted program executes without
+                                <strong>Syntax Reward ($r_{\mathrm{sn}}$):</strong> Evaluates if the predicted program
+                                executes without
                                 Python errors. Syntax reward is 1 if the program executes properly with placeholder
                                 variables, 0 otherwise.
                             </li>
                             <li>
-                                <strong>Spatial Reward:</strong> An LLM verifies that the predicted plan addresses all
+                                <strong>Spatial Reward ($r_{\mathrm{sp}}$):</strong> An LLM verifies that the predicted
+                                plan addresses all
                                 spatial relationships in the query (above, behind, left of, etc.). The verifier returns
                                 1 if all spatial relationships are addressed, 0 otherwise.
                             </li>
                             <li>
-                                <strong>Attribute Reward:</strong> An LLM verifier assesses whether the plan specifies
+                                <strong>Attribute Reward ($r_{\mathrm{att}}$):</strong> An LLM verifier assesses whether
+                                the plan specifies
                                 explicitly and correctly how to compute all relevant attributes (height, color, etc.) in
                                 the query. The LLM returns 1 if all attributes are computed correctly, otherwise 0.
                             </li>
                             <li>
-                                <strong>Logic Reward:</strong> An LLM verifier is given the query and predicted plan, it
+                                <strong>Logic Reward ($r_{\mathrm{log}}$):</strong> An LLM verifier is given the query
+                                and predicted plan, it
                                 returns 1 if it considers the plan reasonable and coherent for the given query, 0
                                 otherwise.
                             </li>
                             <li>
-                                <strong>Adherence Reward:</strong> The predicted plan and code are given to an LLM
+                                <strong>Adherence Reward ($r_{\mathrm{ad}}$):</strong> The predicted plan and code are
+                                given to an LLM
                                 verifier, which returns 1 if the code faithfully implements the plan without deviations,
                                 0 otherwise.
                             </li>
@@ -281,11 +301,19 @@
                             Our final reward is:
                         </p>
 
-                        <p>TODO: add equation</p>
+                        \[
+                        R(q,p,c) = r_{\mathrm{fmt}}(p,c) \cdot \big [
+                        \lambda_{\mathrm{sn}}\, r_{\mathrm{sn}}(c)
+                        + \lambda_{\mathrm{log}}\, r_{\mathrm{log}}(q,p)
+                        + \lambda_{\mathrm{att}}\, r_{\mathrm{att}}(q,p)
+                        + \lambda_{\mathrm{sp}}\, r_{\mathrm{sp}}(q,p)
+                        + \lambda_{\mathrm{ad}}\, r_{\mathrm{ad}}(p,c)\big ]
+                        \]
 
-                        <p>The format reward rfmt acts as a hard constraint and is applied as a multiplier, while the
-                            weighted sum of the remaining rewards evaluates content quality. All rk ∈ {0, 1} and P
-                            k λk = 1.0. (TODO: fix math)
+                        <p>The format reward $r_{\text{fmt}}$ acts as a hard constraint and is applied as a multiplier,
+                            while the
+                            weighted sum of the remaining rewards evaluates content quality. All $r_k ∈ \{0, 1\}$ and
+                            $\sum_k \lambda_k = 1.0$.
                         </p>
 
 
@@ -314,12 +342,12 @@
                         </figure>
 
                         <p>
-                            Our approach for verifier-improved visual grounding relies on image-query pairs (TODO:
-                            math). For each query, our LLM reasoning model generates a plan and code, (TODO: math). From
-                            code (TODO: math), we parse all grounding queries – e.g., <code>GD_DETECT(“HELMET”)</code> –
-                            and execute them with a pre-trained detector. To ensure high recall, we lower the detector’s
-                            confidence threshold. This leads to overprediction, which we validate with a frozen VLM
-                            verifier in three steps:
+                            Our approach for verifier-improved visual grounding relies on image-query pairs $\{(I_j,
+                            q_j)\}^M_{j=1}$. For each query $q_j$, our LLM reasoning model generates a plan and code,
+                            $(p_j, c_j)$. From code $c_j$, we parse all grounding queries – e.g.,
+                            <code>GD_DETECT(“HELMET”)</code> – and execute them with a pre-trained detector. To ensure
+                            high recall, we lower the detector’s confidence threshold. This leads to overprediction,
+                            which we validate with a frozen VLM verifier in three steps:
                         </p>
 
                         <ol>
@@ -500,7 +528,7 @@
                         <p>
                             We would like to thank ...
                         </p>
-
+                        <!-- 
                         <strong>Recommended Reading</strong>
                         <ol>
                             <li><a href="https://visually-grounded-rl.github.io/">Visually Grounded Reinforcement
@@ -513,12 +541,51 @@
                             <li><a href="https://glab-caltech.github.io/vadar/">Visual Agentic AI for Spatial
                                     Reasoning
                                     with a Dynamic API</a></li>
+                        </ol> -->
+
+                        <strong>References</strong>
+                        <ol>
+                            <li id="thinking-with-images">
+                                OpenAI. <em>Thinking with Images</em>. URL: <a
+                                    href="https://openai.com/index/thinking-with-images/">https://openai.com/index/thinking-with-images/</a>
+                            </li>
+                            <li id="grit">
+                                Yue Fan, Xuehai He, Diji Yang, Kaizhi Zheng, Ching-Chen Kuo, Yuting Zheng, Sravana
+                                Jyothi Narayanaraju, Xinze Guan, and Xin Eric Wang.
+                                <em>Grit: Teaching mllms to think with images</em>. in <em>NeurIPS</em>, 2025.
+                            </li>
+                            <li id="vigorl">
+                                Gabriel Sarch, Snigdha Saha, Naitik Khandelwal, Ayush Jain, Michael J Tarr, Aviral
+                                Kumar, and Katerina Fragkiadaki.
+                                <em>Grounded reinforcement learning for visual reasoning</em>. in <em>NeurIPS</em>,
+                                2025.
+                            </li>
+
+                            <li id="vadar">
+                                Damiano Marsili, Rohun Agrawal, Yisong Yue, and Georgia Gkioxari.
+                                <em>Visual agentic ai for spatial reasoning with a dynamic api</em>. in <em>CVPR</em>,
+                                2025.
+                            </li>
+
+                            <li id="visprog">
+                                Tanmay Gupta and Aniruddha Kembhavi.
+                                <em>Visual programming: Compositional visual reasoning without training</em>. in
+                                <em>CVPR</em>,
+                                2023.
+                            </li>
+
+                            <li id="vipergpt">
+                                Didac Suris, Sachit Menon, and Carl Vondrick.
+                                <em>Vipergpt: Visual inference via python execution for reasoning</em>. in
+                                <em>ICCV</em>,
+                                2023.
+                            </li>
+
                         </ol>
 
                     </div>
                 </div>
             </div>
-            <!--/ Abstract. -->
         </div>
     </section>
 
