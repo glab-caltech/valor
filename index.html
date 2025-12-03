@@ -436,11 +436,11 @@
                         <h3>Evaluation</h3>
 
                         <p>
-                            We evaluated a series of open-source models, as well as VALOR, across a wide range of
-                            spatial reasoning benchmarks. Each LLM was used language-only, and was prompted to
+                            We evaluate a series of open-source models, as well as VALOR, across a wide range of
+                            spatial reasoning benchmarks. Each LLM is used language-only, and is prompted to
                             generate Python programs that can invoke an API of vision specialist models (detection,
-                            depth estimation, VQA), as described above. We then executed the generated programs to
-                            determine accuracy on each of the bechmarks.
+                            depth estimation, VQA), as described above. We then execute the generated programs to
+                            determine accuracy on each of the benchmarks.
                         </p>
 
 
@@ -457,17 +457,17 @@
                         </figure>
 
                         <p>
-                            Among the open-source models we evaluated (Llama3.2-11B, Gemma3-12B,and Qwen3-8B), Qwen3
-                            consistently performed the best. We found that despite using the
-                            instruction-tuned variants, Gemma3 and Llama3.2 routinely ignored our system prompts.
+                            Among the open-source models we evaluate (Llama3.2-11B, Gemma3-12B,and Qwen3-8B), Qwen3
+                            consistently performs the best. We find that despite using the
+                            instruction-tuned variants, Gemma3 and Llama3.2 routinely ignore our system prompts.
                             For
-                            example, both models would frequently overwrite the input image path, define
+                            example, both models frequently overwrite the input image path, define
                             "placeholder"
-                            values, or argue the query was impossible and refuse to answer altogether. In contrast,
-                            Qwen3 consistently produced reasonable programs, but incorrectly handled nuanced details
+                            values, or argue the query is impossible and refuse to answer altogether. In contrast,
+                            Qwen3 consistently produces reasonable programs, but incorrectly handles nuanced details
                             in
-                            the query and failed to use tools effectively. We felt these were issues that could be
-                            addressed via post-training, so decided to build on the capable Qwen3 model for VALOR.
+                            the query and fails to use tools effectively. We feel these are issues that can be
+                            addressed via post-training, so we build on the capable Qwen3 model for VALOR.
                         </p>
 
                         <h4>Qwen3 vs VALOR-RL: Training with verifiers improves model reasoning.</h4>
