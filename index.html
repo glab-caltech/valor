@@ -181,7 +181,7 @@
                         <p>
                             Another line of work uses LLMs for program synthesis with vision specialists. Examples
                             include VADAR <a href="#vadar">[4]</a>, VisProg <a href="#visprog">[5]</a>, and ViperGPT <a
-                                href="#vipergpt">[4]</a>. These training-free approaches
+                                href="#vipergpt">[6]</a>. These training-free approaches
                             rely on proprietary LLMs and pre-trained specialists that are poorly aligned for visual and
                             spatial reasoning.
                         </p>
@@ -220,17 +220,17 @@
                             <li>
                                 <code>GD_DETECT</code>, returns the bounding box of all object instances specified by
                                 the noun description —
-                                e.g., <code>GD_DETECT("CAR")</code> using a GroundingDINO model [CITE].
+                                e.g., <code>GD_DETECT("CAR")</code> using a GroundingDINO model <a href="#gd">[7]</a>.
                             </li>
                             <li>
                                 <code>DEPTH</code>, returns the depth of a pixel in the image —
-                                <code>DEPTH(IMAGE, X, Y)</code> using MoGe2 [CITE].
+                                <code>DEPTH(IMAGE, X, Y)</code> using MoGe2 <a href="#moge2">[8]</a>.
                             </li>
                             <li>
                                 <code>VQA</code>, returns an object’s attribute (e.g., color) from the input image crop
                                 around the object —
                                 e.g., <code>VQA(IMAGE_CROP, "WHAT IS THE COLOR OF THE OBJECT IN THE IMAGE?")</code>
-                                using GPT-5-mini [CITE].
+                                using GPT-5-mini <a href="#gpt5">[9]</a>.
                             </li>
                         </ul>
 
@@ -579,6 +579,27 @@
                                 <em>Vipergpt: Visual inference via python execution for reasoning</em>. in
                                 <em>ICCV</em>,
                                 2023.
+                            </li>
+
+
+                            <li id="gd">
+                                Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Chunyuan Li,
+                                Jianwei Yang, Hang Su, Jun Zhu, et al
+                                <em>Grounding dino: Marrying dino with grounded pre-training for
+                                    open-set object detection</em>. arXiv preprint arXiv:2303.05499, 2023b.
+                            </li>
+
+                            <li id="moge2">
+                                Ruicheng Wang, Sicheng Xu, Yue Dong, Yu Deng, Jianfeng Xiang, Zelong Lv, Guangzhong Sun,
+                                Xin Tong, and Jiaolong Yang.
+                                <em> Moge-2: Accurate monocular geometry with metric scale and
+                                    sharp details.</em>. in
+                                <em>CVPR</em>,
+                                2025.
+                            </li>
+                            <li id="gpt5">
+                                OpenAI. <em>GPT-5-mini</em>. URL: <a
+                                    href="https://openai.com/index/introducing-gpt-5/">https://openai.com/index/introducing-gpt-5/</a>
                             </li>
 
                         </ol>
