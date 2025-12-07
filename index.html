@@ -39,57 +39,59 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
     <script>
-        (function () {
-            const carousel = document.getElementById('valor-carousel');
-            if (!carousel) return;
+        document.addEventListener('DOMContentLoaded', function () {
+            const track = document.querySelector('.vc-track');
+            if (!track) return; // in case you remove the carousel
 
-            const slides = Array.from(carousel.querySelectorAll('.valor-slide'));
-            const prevBtn = carousel.querySelector('.valor-prev');
-            const nextBtn = carousel.querySelector('.valor-next');
-
+            const slides = Array.from(track.querySelectorAll('.vc-slide'));
+            const prevBtn = document.querySelector('.vc-arrow-left');
+            const nextBtn = document.querySelector('.vc-arrow-right');
+            const descEl = document.getElementById('vc-description');
             let current = 0;
 
-            function updateSlides() {
-                slides.forEach((slide, i) => {
-                    slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-hidden');
-                    const video = slide.querySelector('video');
-                    if (video) {
-                        video.pause();
-                    }
-
-                    if (i === current) {
-                        slide.classList.add('is-active');
-                    } else if (i === (current - 1 + slides.length) % slides.length) {
-                        slide.classList.add('is-prev');
-                    } else if (i === (current + 1) % slides.length) {
-                        slide.classList.add('is-next');
-                    } else {
-                        slide.classList.add('is-hidden');
-                    }
+            function setActiveSlide(index) {
+                // Pause all videos and remove active class
+                slides.forEach((slide) => {
+                    slide.classList.remove('is-active');
+                    const v = slide.querySelector('video');
+                    v.pause();
+                    v.currentTime = 0;
                 });
 
-                // autoplay only the active video
-                const activeVideo = slides[current].querySelector('video');
-                if (activeVideo) {
-                    activeVideo.currentTime = 0;
-                    const playPromise = activeVideo.play();
-                    if (playPromise && playPromise.catch) {
-                        playPromise.catch(() => { });
-                    }
+                // Wrap index
+                current = (index + slides.length) % slides.length;
+                const activeSlide = slides[current];
+                activeSlide.classList.add('is-active');
+
+                // Center the active slide in the track
+                const offset =
+                    activeSlide.offsetLeft -
+                    (track.clientWidth - activeSlide.clientWidth) / 2;
+                track.scrollTo({ left: offset, behavior: 'smooth' });
+
+                // Play only the active video
+                const activeVideo = activeSlide.querySelector('video');
+                activeVideo.muted = true;
+                activeVideo.loop = true;
+                activeVideo.playsInline = true;
+                activeVideo.removeAttribute('controls');
+
+                activeVideo.play().catch(() => {
+                    // autoplay might be blocked; nothing to do, user can click
+                });
+
+                // ✅ Update description text
+                if (descEl) {
+                    descEl.innerHTML = activeSlide.dataset.description || '';
                 }
             }
 
-            function go(delta) {
-                current = (current + delta + slides.length) % slides.length;
-                updateSlides();
-            }
+            prevBtn.addEventListener('click', () => setActiveSlide(current - 1));
+            nextBtn.addEventListener('click', () => setActiveSlide(current + 1));
 
-            prevBtn.addEventListener('click', () => go(-1));
-            nextBtn.addEventListener('click', () => go(1));
-
-            // Initial state
-            updateSlides();
-        })();
+            // Initialize
+            setActiveSlide(0);
+        });
     </script>
 
 </head>
@@ -300,7 +302,7 @@
                         <p>
                             VALOR leverages LLM verifiers as a reward signal to improve reasoning via reinforcement
                             learning. LLM verifiers critique model outputs across a rubric of six criteria targeting
-                            specfic aspects of spatial reasoning.
+                            specific aspects of spatial reasoning.
                         </p>
                         <figure class="image is-fullwidth" style="margin: 1rem 0;">
                             <video id="teaser" autoplay muted loop playsinline height="80%">
@@ -324,8 +326,8 @@
                             <li>
                                 <strong>Format Reward ($r_{\mathrm{fmt}}$):</strong> Ensures model outputs are properly
                                 formatted. Format reward is 1 if the model output contains the proper
-                                <code>&lt;plan&gt;...&lt;\plan&gt;</code> and
-                                <code>&lt;answer&gt;...&lt;\answer&gt;</code> tags, and 0 otherwise.
+                                <code>&lt;plan&gt;...&lt;/plan&gt;</code> and
+                                <code>&lt;answer&gt;...&lt;/answer&gt;</code> tags, and 0 otherwise.
                             </li>
                             <li>
                                 <strong>Syntax Reward ($r_{\mathrm{sn}}$):</strong> Evaluates if the predicted program
@@ -470,7 +472,7 @@
                         </figure>
 
                         <p>
-                            A natural question to ask is whether VALOR can ever outperform the veriifers it uses
+                            A natural question to ask is whether VALOR can ever outperform the verifiers it uses
                             during
                             training. To this end, we first note that VALOR uses multimodal verifiers to
                             <em>select</em>
@@ -485,61 +487,63 @@
                             figure above, we find that GPT-5-mini frequently outputs misaligned or overly large
                             boxes,
                             failing to localize objects that VALOR (trained with GPT-5-mini as a verifier) correctly
-                            detects. We find that a VLM canprovide reliable binary judgements about correctness even
+                            detects. We find that a VLM can provide reliable binary judgments about correctness even
                             when its own grounding predictions are imperfect.
                         </p>
 
                         <h3>Model Comparisons</h3>
+                        <p>
+                            We compare VALOR to a series of models on visual reasoning benchmarks below.
+                        </p>
 
-                        <div class="valor-video-carousel">
-                            <button class="valor-nav-button valor-prev" aria-label="Previous example">&#10094;</button>
+                        <div class="video-carousel-wrapper">
+                            <div class="video-carousel">
+                                <button class="vc-arrow vc-arrow-left" aria-label="Previous example">&#10094;</button>
 
-                            <div class="valor-track" id="valorTrack">
-                                <!-- Slide 1 -->
-                                <div class="valor-slide valor-active">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-a.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 1: Short description here.</p>
+                                <div class="vc-track">
+                                    <div class="vc-slide is-active"
+                                        data-description="<strong>VALOR vs Qwen3-8B.</strong> Qwen3 incorrectly considers only <em>one</em> sink, while the query specifies that the <em>combined</em> sinks are 1.5m wide. Instead, VALOR considers both sinks and incorporates the given measurement correctly.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-a.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
+                                    <div class="vc-slide"
+                                        data-description="<strong>VALOR vs Qwen3-8B.</strong> Qwen3 ignores the <em>double</em> specification in the query, while VALOR does not.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-b.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
+                                    <div class="vc-slide"
+                                        data-description="<strong>VALOR vs Qwen3-8B.</strong> Qwen3 incorrectly omits the <em>still driving</em> constraint and asks an open-ended query, which is unlikely to be parsed correctly. Instead, VALOR incorporates the constraint and frames the question as yes/no for easier parsing.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-c.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
+                                    <div class="vc-slide"
+                                        data-description="<strong>VALOR vs o4-mini.</strong> o4-mini computes the current horizontal overlap and compares object depth, essentially evaluating <em>current</em> visibility. In contrast, VALOR computes the 3D width of both objects, correctly comparing visibility under the given hypothesis.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-d.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
+                                    <div class="vc-slide"
+                                        data-description="<strong>VALOR vs ViGoRL.</strong> ViGoRL estimates object dimensions incorrectly, and does not produce a final answer. Instead, via explicit grounding with a detector, VALOR correctly computes object dimensions and uses the given measurement to produce a final answer.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-e.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
+                                    <div class="vc-slide"
+                                        data-description="<strong>VALOR vs GRIT.</strong> GRIT ignores the given measurements and incorrectly reasons about the stool width. In contrast, VALOR explicitly computes the 3D stool width and uses the given measurement correctly to find the final answer.">
+                                        <video
+                                            src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-f.mp4"
+                                            muted playsinline loop></video>
+                                    </div>
                                 </div>
-                                <!-- Slide 2 -->
-                                <div class="valor-slide">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-b.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 2: Short description here.</p>
-                                </div>
-                                <!-- Slide 3 -->
-                                <div class="valor-slide">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-c.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 3: Short description here.</p>
-                                </div>
-                                <!-- Slide 4 -->
-                                <div class="valor-slide">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-d.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 4: Short description here.</p>
-                                </div>
-                                <!-- Slide 5 -->
-                                <div class="valor-slide">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-e.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 5: Short description here.</p>
-                                </div>
-                                <!-- Slide 6 -->
-                                <div class="valor-slide">
-                                    <video
-                                        src="https://github.com/glab-caltech/valor/raw/refs/heads/main/static/videos/comparison-f.mp4"
-                                        autoplay muted loop playsinline></video>
-                                    <p class="valor-caption">Example 6: Short description here.</p>
-                                </div>
+
+                                <button class="vc-arrow vc-arrow-right" aria-label="Next example">&#10095;</button>
                             </div>
-
-                            <button class="valor-nav-button valor-next" aria-label="Next example">&#10095;</button>
+                            <!-- description text under the carousel -->
+                            <p id="vc-description" class="has-text-centered is-size-6" style="margin-top: 0.75rem;">
+                            </p>
                         </div>
 
                         <h3>Benchmark Evaluations</h3>
@@ -548,7 +552,7 @@
                             We evaluate a series of open-source models, as well as VALOR, across a wide range of
                             spatial reasoning benchmarks. Each LLM is used language-only, and is prompted to
                             generate Python programs that can invoke an API of vision specialist models (detection,
-                            depth estimation, VQA), as described above. We then execute the generated programs to
+                            depth estimation, VQA), as described above. We execute the generated programs to
                             determine accuracy on each of the benchmarks.
                         </p>
 
