@@ -40,30 +40,54 @@
     </script>
     <script>
         (function () {
-            const track = document.getElementById('valorTrack');
-            const slides = Array.from(track.querySelectorAll('.valor-slide'));
-            const prevBtn = document.querySelector('.valor-prev');
-            const nextBtn = document.querySelector('.valor-next');
+            const carousel = document.getElementById('valor-carousel');
+            if (!carousel) return;
+
+            const slides = Array.from(carousel.querySelectorAll('.valor-slide'));
+            const prevBtn = carousel.querySelector('.valor-prev');
+            const nextBtn = carousel.querySelector('.valor-next');
+
             let current = 0;
 
             function updateSlides() {
-                slides.forEach((slide, index) => {
-                    slide.classList.toggle('valor-active', index === current);
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('is-active', 'is-prev', 'is-next', 'is-hidden');
+                    const video = slide.querySelector('video');
+                    if (video) {
+                        video.pause();
+                    }
+
+                    if (i === current) {
+                        slide.classList.add('is-active');
+                    } else if (i === (current - 1 + slides.length) % slides.length) {
+                        slide.classList.add('is-prev');
+                    } else if (i === (current + 1) % slides.length) {
+                        slide.classList.add('is-next');
+                    } else {
+                        slide.classList.add('is-hidden');
+                    }
                 });
-                slides[current].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+                // autoplay only the active video
+                const activeVideo = slides[current].querySelector('video');
+                if (activeVideo) {
+                    activeVideo.currentTime = 0;
+                    const playPromise = activeVideo.play();
+                    if (playPromise && playPromise.catch) {
+                        playPromise.catch(() => { });
+                    }
+                }
             }
 
-            prevBtn.addEventListener('click', () => {
-                current = (current - 1 + slides.length) % slides.length;
+            function go(delta) {
+                current = (current + delta + slides.length) % slides.length;
                 updateSlides();
-            });
+            }
 
-            nextBtn.addEventListener('click', () => {
-                current = (current + 1) % slides.length;
-                updateSlides();
-            });
+            prevBtn.addEventListener('click', () => go(-1));
+            nextBtn.addEventListener('click', () => go(1));
 
-            // Initial centering
+            // Initial state
             updateSlides();
         })();
     </script>
